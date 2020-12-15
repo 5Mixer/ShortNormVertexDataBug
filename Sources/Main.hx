@@ -8,7 +8,6 @@ import kha.Scheduler;
 import kha.Shaders;
 import kha.System;
 import kha.graphics4.ConstantLocation;
-import kha.graphics4.FragmentShader;
 import kha.graphics4.IndexBuffer;
 import kha.graphics4.PipelineState;
 import kha.graphics4.TextureUnit;
@@ -30,8 +29,8 @@ class Main {
 		System.start({title: "TextureTest", width: 1024, height: 768}, function (_) {
 			Assets.loadEverything(function () {
 				var structure = new VertexStructure();
-				structure.add("pos", VertexData.Float3);
-				structure.add("tex", VertexData.Float2);
+				structure.add("pos", VertexData.Short4Norm); //x y z ~
+				structure.add("tex", VertexData.Short2Norm); //u v
 				
 				pipeline = new PipelineState();
 				pipeline.inputLayout = [structure];
@@ -42,16 +41,19 @@ class Main {
 				texunit = pipeline.getTextureUnit("texsampler");
 				offset = pipeline.getConstantLocation("mvp");
 				
-				vertices = new VertexBuffer(3, structure, Usage.StaticUsage);
-				var v = vertices.lock();
-				v.set( 0, -1); v.set( 1, -1); v.set( 2, 0.5); v.set( 3, 0); v.set( 4, 1);
-				v.set( 5,  1); v.set( 6, -1); v.set( 7, 0.5); v.set( 8, 1); v.set( 9, 1);
-				v.set(10, -1); v.set(11,  1); v.set(12, 0.5); v.set(13, 0); v.set(14, 0);
+				vertices = new VertexBuffer(4, structure, Usage.StaticUsage);
+				var v = vertices.lockInt16();
+				var vi = 0;
+				v.set( vi++, -10000); v.set( vi++, -10000); v.set( vi++, 12000); v.set( vi++, 0); v.set( vi++, 0); v.set( vi++, 0);
+				v.set( vi++,  10000); v.set( vi++, -10000); v.set( vi++, 12000); v.set( vi++, 0); v.set( vi++, 32767); v.set( vi++, 0);
+				v.set(vi++, -10000);  v.set(vi++,  10000);  v.set(vi++, 12000);  v.set( vi++, 0); v.set(vi++, 0);  v.set(vi++, 32767);
+				v.set(vi++,  10000);  v.set(vi++,  10000);  v.set(vi++, 12000);  v.set( vi++, 0); v.set(vi++, 32767);  v.set(vi++, 32767);
 				vertices.unlock();
 				
-				indices = new IndexBuffer(3, Usage.StaticUsage);
+				indices = new IndexBuffer(6, Usage.StaticUsage);
 				var i = indices.lock();
 				i[0] = 0; i[1] = 1; i[2] = 2;
+				i[3] = 2; i[4] = 1; i[5] = 3;
 				indices.unlock();
 				
 				System.notifyOnFrames(render);
